@@ -5,90 +5,19 @@ api-version: '1.21'
 author: Azox
 description: A comprehensive utility plugin for Paper servers.
 commands:
-  sethome:
-    description: Set a home at your current location.
-    permission: azox.utils.sethome
-  home:
-    description: Teleport to your home.
-    permission: azox.utils.home
-  delhome:
-    description: Delete a home.
-    permission: azox.utils.delhome
-  phome:
-    description: Teleport to a public home.
-    permission: azox.utils.phome
-    aliases: [publichome]
-  homes:
-    description: List your homes.
-    permission: azox.utils.home
-    aliases: [homelist]
-  edithome:
-    description: Edit home details.
-    permission: azox.utils.edithome
-    aliases: [homeinfo]
-  renamehome:
-    description: Rename a home.
-    permission: azox.utils.edithome
-  relocatehome:
-    description: Relocate a home.
-    permission: azox.utils.edithome
-  setphome:
-    description: Set a public home.
-    permission: azox.utils.setphome
-  setwarp:
-    description: Set a warp.
-    permission: azox.utils.setwarp
-  warp:
-    description: Teleport to a warp.
-    permission: azox.utils.warp
-  tpa:
-    description: Request to teleport to a player.
-    permission: azox.utils.tpa
-    aliases: [tpask]
-  tpahere:
-    description: Request a player to teleport to you.
-    permission: azox.utils.tpahere
-  tpaccept:
-    description: Accept a teleport request.
-    permission: azox.utils.tpa
-  tpdecline:
-    description: Decline a teleport request.
-    permission: azox.utils.tpa
-  tpignore:
-    description: Ignore teleport requests.
-    permission: azox.utils.tpignore
-  rtp:
-    description: Randomly teleport.
-    permission: azox.utils.rtp
-    aliases: [tpr]
-  back:
-    description: Go back to your last location.
-    permission: azox.utils.back
-  enderchest:
-    description: Open your enderchest.
-    permission: azox.utils.enderchest
-    aliases: [ec, echest]
-  tp:
-    description: Teleport command.
-    permission: azox.utils.tp
-  whois:
-    description: Get information about a player.
-    permission: azox.utils.whois
-  seen:
-    description: See when a player was last online.
-    permission: azox.utils.seen
-  setjail:
-    description: Set a jail location.
-    permission: azox.utils.setjail
-  jail:
-    description: Jail a player with optional escapable and dramatic effects.
-    permission: azox.utils.jail
-  unjail:
-    description: Unjail a player.
-    permission: azox.utils.jail
   anvil:
     description: Open an anvil.
     permission: azox.utils.anvil
+  azox:
+    description: Open AzoxUtils Admin GUI.
+    permission: azox.utils.admin
+    aliases: [azoxadmin]
+  azoxreload:
+    description: Reload the plugin.
+    permission: azox.utils.admin
+  back:
+    description: Go back to your last location.
+    permission: azox.utils.back
   break:
     description: Break the block you are looking at.
     permission: azox.utils.break
@@ -107,20 +36,27 @@ commands:
     description: Clear inventory.
     permission: azox.utils.clearinventory
     aliases: [clear, clean]
+  compass:
+    description: Show current direction.
+    permission: azox.utils.compass
   condense:
     description: Condense items into blocks.
     permission: azox.utils.condense
     aliases: [compact, toblocks]
-  compass:
-    description: Show current direction.
-    permission: azox.utils.compass
+  copyitem:
+    description: Duplicate the held item.
+    permission: azox.utils.copyitem
+  craft:
+    description: Open a portable crafting table.
+    permission: azox.utils.craft
+    aliases: [wb, workbench]
   createkit:
     description: Create a kit.
     permission: azox.utils.createkit
     aliases: [ck]
-  kit:
-    description: Claim a kit.
-    permission: azox.utils.kit
+  delhome:
+    description: Delete a home.
+    permission: azox.utils.delhome
   deljail:
     description: Delete a jail.
     permission: azox.utils.deljail
@@ -129,155 +65,222 @@ commands:
     description: Delete a kit.
     permission: azox.utils.delkit
     aliases: [rmkit]
-  trash:
-    description: Open a disposal inventory.
-    permission: azox.utils.trash
-    aliases: [disposal]
+  edithome:
+    description: Edit home details.
+    permission: azox.utils.edithome
+    aliases: [homeinfo]
   enchant:
     description: Enchant an item.
     permission: azox.utils.enchant
+  enderchest:
+    description: Open your enderchest.
+    permission: azox.utils.enderchest
+    aliases: [ec, echest]
+  extinguish:
+    description: Put out a player who is on fire.
+    permission: azox.utils.extinguish
   feed:
     description: Feed a player.
     permission: azox.utils.feed
     aliases: [eat]
+  fly:
+    description: Toggle flight.
+    permission: azox.utils.fly
+  freeze:
+    description: Freeze or unfreeze a player.
+    permission: azox.utils.freeze
   gamemode:
     description: Change gamemode.
     permission: azox.utils.gamemode
     aliases: [gm]
-  gms:
-    description: Set survival mode.
-    permission: azox.utils.gamemode
-  gmc:
-    description: Set creative mode.
-    permission: azox.utils.gamemode
-  gma:
-    description: Set adventure mode.
-    permission: azox.utils.gamemode
-  gmsp:
-    description: Set spectator mode.
-    permission: azox.utils.gamemode
   getpos:
     description: Get current coordinates.
     permission: azox.utils.getpos
     aliases: [coords]
+  gma:
+    description: Set adventure mode.
+    permission: azox.utils.gamemode
+  gmc:
+    description: Set creative mode.
+    permission: azox.utils.gamemode
+  gms:
+    description: Set survival mode.
+    permission: azox.utils.gamemode
+  gmsp:
+    description: Set spectator mode.
+    permission: azox.utils.gamemode
   god:
     description: Toggle god mode.
     permission: azox.utils.god
     aliases: [invuln, invulnerable, godmode]
+  grindstone:
+    description: Open a portable grindstone.
+    permission: azox.utils.grindstone
   heal:
     description: Heal a player.
     permission: azox.utils.heal
-  lore:
-    description: Change item lore.
-    permission: azox.utils.lore
+  home:
+    description: Teleport to your home.
+    permission: azox.utils.home
+  homes:
+    description: List your homes.
+    permission: azox.utils.home
+    aliases: [homelist]
+  itemname:
+    description: Set the display name of the held item.
+    permission: azox.utils.itemname
+  jail:
+    description: Jail a player with optional escapable and dramatic effects.
+    permission: azox.utils.jail
+  jumpto:
+    description: Teleport to the block you are looking at.
+    permission: azox.utils.jumpto
+  kit:
+    description: Claim a kit.
+    permission: azox.utils.kit
   lightning:
     description: Strike lightning.
     permission: azox.utils.lightning
+  lobby:
+    description: Teleport to the lobby/hub.
+    permission: azox.utils.lobby
+    aliases: [hub]
+  lore:
+    description: Change item lore.
+    permission: azox.utils.lore
+  near:
+    description: See players within a certain radius.
+    permission: azox.utils.near
+  phome:
+    description: Teleport to a public home.
+    permission: azox.utils.phome
+    aliases: [publichome]
+  ping:
+    description: View your ping or another player's ping.
+    permission: azox.utils.ping
+  relocatehome:
+    description: Relocate a home.
+    permission: azox.utils.edithome
+  renamehome:
+    description: Rename a home.
+    permission: azox.utils.edithome
+  repair:
+    description: Repair the held item.
+    permission: azox.utils.repair
+  rtp:
+    description: Randomly teleport.
+    permission: azox.utils.rtp
+    aliases: [tpr]
   rules:
     description: Show server rules.
     permission: azox.utils.rules
+  se:
+    description: Quick inspect player enderchest.
+    permission: azox.utils.see
+  see:
+    description: Inspect a player's inventory or enderchest.
+    permission: azox.utils.see
+  seen:
+    description: See when a player was last online.
+    permission: azox.utils.seen
+  sethome:
+    description: Set a home at your current location.
+    permission: azox.utils.sethome
+  setjail:
+    description: Set a jail location.
+    permission: azox.utils.setjail
+  setphome:
+    description: Set a public home.
+    permission: azox.utils.setphome
+  setspawn:
+    description: Set spawn location.
+    permission: azox.utils.setspawn
+  setwarp:
+    description: Set a warp.
+    permission: azox.utils.setwarp
+  si:
+    description: Quick inspect player inventory.
+    permission: azox.utils.see
+  spawn:
+    description: Teleport to spawn.
+    permission: azox.utils.spawn
   speed:
     description: Set walk or fly speed.
     permission: azox.utils.speed
     aliases: [walkspeed, flyspeed]
-  fly:
-    description: Toggle flight.
-    permission: azox.utils.fly
+  stats:
+    description: See player statistics.
+    permission: azox.utils.stats
+  stonecutter:
+    description: Open a portable stonecutter.
+    permission: azox.utils.stonecutter
+  storm:
+    description: Set weather to storm.
+    permission: azox.utils.weather
   sudo:
     description: Force a player to run a command.
     permission: azox.utils.sudo
   suicide:
     description: Kill yourself.
     permission: azox.utils.suicide
-  tempban:
-    description: Temporarily ban a player.
-    permission: azox.utils.tempban
-  weather:
-    description: Change weather.
-    permission: azox.utils.weather
   sun:
     description: Set weather to sun.
     permission: azox.utils.weather
-  storm:
-    description: Set weather to storm.
-    permission: azox.utils.weather
-  setspawn:
-    description: Set spawn location.
-    permission: azox.utils.setspawn
-  see:
-    description: Inspect a player's inventory or enderchest.
-    permission: azox.utils.see
-  si:
-    description: Quick inspect player inventory.
-    permission: azox.utils.see
-  se:
-    description: Quick inspect player enderchest.
-    permission: azox.utils.see
+  tempban:
+    description: Temporarily ban a player.
+    permission: azox.utils.tempban
+  top:
+    description: Teleport to the highest safe block.
+    permission: azox.utils.top
+  tp:
+    description: Teleport command.
+    permission: azox.utils.tp
+  tpaccept:
+    description: Accept a teleport request.
+    permission: azox.utils.tpa
+  tpa:
+    description: Request to teleport to a player.
+    permission: azox.utils.tpa
+    aliases: [tpask]
+  tpahere:
+    description: Request a player to teleport to you.
+    permission: azox.utils.tpahere
+  tpdecline:
+    description: Decline a teleport request.
+    permission: azox.utils.tpa
+  tpignore:
+    description: Ignore teleport requests.
+    permission: azox.utils.tpignore
+  tps:
+    description: View server TPS and memory.
+    permission: azox.utils.tps
+  trash:
+    description: Open a disposal inventory.
+    permission: azox.utils.trash
+    aliases: [disposal]
+  unjail:
+    description: Unjail a player.
+    permission: azox.utils.jail
+  uptime:
+    description: See how long the server has been running.
+    permission: azox.utils.tps
   utilities:
     description: Open the utility hub.
     permission: azox.utils.gui
     aliases: [utils]
-  azox:
-    description: Open AzoxUtils Admin GUI.
-    permission: azox.utils.admin
-    aliases: [azoxadmin]
-  lobby:
-    description: Teleport to the lobby/hub.
-    permission: azox.utils.lobby
-    aliases: [hub]
-  itemname:
-    description: Set the display name of the held item.
-    permission: azox.utils.itemname
-  copyitem:
-    description: Duplicate the held item.
-    permission: azox.utils.copyitem
-  repair:
-    description: Repair the held item.
-    permission: azox.utils.repair
-  craft:
-    description: Open a portable crafting table.
-    permission: azox.utils.craft
-    aliases: [wb, workbench]
-  grindstone:
-    description: Open a portable grindstone.
-    permission: azox.utils.grindstone
-  stonecutter:
-    description: Open a portable stonecutter.
-    permission: azox.utils.stonecutter
-  top:
-    description: Teleport to the highest safe block.
-    permission: azox.utils.top
-  near:
-    description: See players within a certain radius.
-    permission: azox.utils.near
-  world:
-    description: Teleport to a different world.
-    permission: azox.utils.world
-  tps:
-    description: View server TPS and memory.
-    permission: azox.utils.tps
-  ping:
-    description: View your ping or another player's ping.
-    permission: azox.utils.ping
-  uptime:
-    description: See how long the server has been running.
-    permission: azox.utils.tps
-  stats:
-    description: See player statistics.
-    permission: azox.utils.stats
-  azoxreload:
-    description: Reload the plugin.
-    permission: azox.utils.admin
-  extinguish:
-    description: Put out a player who is on fire.
-    permission: azox.utils.extinguish
-  jumpto:
-    description: Teleport to the block you are looking at.
-    permission: azox.utils.jumpto
-  freeze:
-    description: Freeze or unfreeze a player.
-    permission: azox.utils.freeze
   vanish:
     description: Hide from other players.
     permission: azox.utils.vanish
     aliases: [v]
+  warp:
+    description: Teleport to a warp.
+    permission: azox.utils.warp
+  weather:
+    description: Change weather.
+    permission: azox.utils.weather
+  whois:
+    description: Get information about a player.
+    permission: azox.utils.whois
+  world:
+    description: Teleport to a different world.
+    permission: azox.utils.world
