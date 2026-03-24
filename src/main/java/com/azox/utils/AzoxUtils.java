@@ -83,11 +83,13 @@ public final class AzoxUtils extends JavaPlugin {
         getCommand("enderchest").setExecutor(new com.azox.utils.command.impl.util.InventoryUtilCommands("enderchest"));
         getCommand("anvil").setExecutor(new com.azox.utils.command.impl.util.InventoryUtilCommands("anvil"));
         getCommand("cartographytable").setExecutor(new com.azox.utils.command.impl.util.InventoryUtilCommands("cartographytable"));
+        getCommand("loom").setExecutor(new com.azox.utils.command.impl.util.InventoryUtilCommands("loom"));
         getCommand("trash").setExecutor(new com.azox.utils.command.impl.util.InventoryUtilCommands("trash"));
         getCommand("craft").setExecutor(new com.azox.utils.command.impl.util.InventoryUtilCommands("craft"));
         getCommand("grindstone").setExecutor(new com.azox.utils.command.impl.util.InventoryUtilCommands("grindstone"));
         getCommand("stonecutter").setExecutor(new com.azox.utils.command.impl.util.InventoryUtilCommands("stonecutter"));
         getCommand("utilities").setExecutor(new com.azox.utils.command.impl.util.GuiCommand());
+        getCommand("config").setExecutor(new com.azox.utils.command.impl.util.ConfigCommand());
         getCommand("settings").setExecutor(new com.azox.utils.command.impl.util.SettingsCommand());
         
         getCommand("see").setExecutor(new com.azox.utils.command.impl.util.SeeCommand());
@@ -152,6 +154,10 @@ public final class AzoxUtils extends JavaPlugin {
         getCommand("extinguish").setExecutor(new com.azox.utils.command.impl.util.AdminUtilCommands("extinguish"));
         getCommand("freeze").setExecutor(new com.azox.utils.command.impl.util.AdminUtilCommands("freeze"));
         getCommand("vanish").setExecutor(new com.azox.utils.command.impl.util.VanishCommand());
+        getCommand("nightvision").setExecutor(new com.azox.utils.command.impl.util.NightVisionCommand());
+        getCommand("nv").setExecutor(new com.azox.utils.command.impl.util.NightVisionCommand());
+        getCommand("nvt").setExecutor(new com.azox.utils.command.impl.util.NightVisionCommand());
+        getCommand("nightvisiontoggle").setExecutor(new com.azox.utils.command.impl.util.NightVisionCommand());
         
         // Misc
         getCommand("tp").setExecutor(new com.azox.utils.command.impl.util.TpCommand());

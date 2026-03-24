@@ -51,6 +51,9 @@ public final class InventoryUtilCommands extends BaseCommand {
             case "stonecutter":
                 player.openStonecutter(null, true);
                 break;
+            case "loom":
+                player.openLoom(null, true);
+                break;
             case "trash":
                 final Inventory trash = Bukkit.createInventory(null, 54, MessageUtil.parse("<red>Trash Bin"));
                 player.openInventory(trash);

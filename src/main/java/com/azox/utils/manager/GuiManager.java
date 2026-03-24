@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +121,7 @@ public final class GuiManager {
         if (player.hasPermission("azox.util.default.enderchest")) inv.setItem(13, createGuiItem(Material.ENDER_CHEST, "<green>Ender Chest", "ec"));
         if (player.hasPermission("azox.util.player.anvil")) inv.setItem(14, createGuiItem(Material.ANVIL, "<green>Anvil", "anvil"));
         if (player.hasPermission("azox.util.player.cartographytable")) inv.setItem(15, createGuiItem(Material.CARTOGRAPHY_TABLE, "<green>Cartography Table", "carttable"));
+        if (player.hasPermission("azox.util.player.loom")) inv.setItem(16, createGuiItem(Material.LOOM, "<green>Loom", "loom"));
 
         player.openInventory(inv);
     }
@@ -127,19 +129,10 @@ public final class GuiManager {
     public void openAdminGui(final Player player) {
         final Inventory inv = Bukkit.createInventory(null, 27, MessageUtil.parse("<red>" + MessageUtil.ICON_STAR + " Admin Configuration"));
 
-        inv.setItem(4, createAdminItem(Material.ENDER_EYE, "<aqua>Vanish Settings", "vanish_settings", true));
-        inv.setItem(13, new ItemStack(Material.COMPARATOR));
-
-        boolean guiEnabled = plugin.getPlayerStorage().isGuiEnabled(player);
-        inv.setItem(2, createAdminItem(Material.BOOK, "<yellow>GUI Mode", "toggle_gui", guiEnabled));
-        inv.setItem(11, new ItemStack(guiEnabled ? Material.LIME_CONCRETE : Material.GRAY_CONCRETE));
-
-        inv.setItem(6, createAdminItem(Material.COMPASS, "<green>World Selector", "world_selector", true));
-        inv.setItem(15, new ItemStack(Material.DAYLIGHT_DETECTOR));
-        
-        boolean mobsIgnore = plugin.getPlayerStorage().isGodMobsIgnore(player);
-        inv.setItem(8, createAdminItem(Material.ZOMBIE_HEAD, "<red>Mob Targeting", "toggle_mobs", !mobsIgnore));
-        inv.setItem(17, new ItemStack(!mobsIgnore ? Material.LIME_CONCRETE : Material.GRAY_CONCRETE));
+        // Layout: --V---T--
+        // Slots: 012345678
+        inv.setItem(2, createAdminItem(Material.ENDER_EYE, "<aqua>Vanish Settings", "vanish_settings", true));
+        inv.setItem(6, createAdminItem(Material.COMPASS, "<green>Teleport Menu", "teleport_menu", true));
 
         player.openInventory(inv);
     }
@@ -164,7 +157,23 @@ public final class GuiManager {
         inv.setItem(16, createAdminItem(Material.HOPPER, "<yellow>Item Pickup", "v_pickup", pickup));
         inv.setItem(25, new ItemStack(pickup ? Material.LIME_CONCRETE : Material.GRAY_CONCRETE));
 
-        inv.setItem(22, createBackButton("admin"));
+        inv.setItem(22, createBackButton("config"));
+
+        player.openInventory(inv);
+    }
+
+    public void openConfigGui(final Player player) {
+        final Inventory inv = Bukkit.createInventory(null, 27, MessageUtil.parse("<gold>" + MessageUtil.ICON_UTILITY + " Configuration"));
+
+        boolean guiEnabled = plugin.getPlayerStorage().isGuiEnabled(player);
+        inv.setItem(10, createAdminItem(Material.BOOK, "<yellow>GUI Mode", "toggle_gui", guiEnabled));
+        inv.setItem(11, new ItemStack(guiEnabled ? Material.LIME_CONCRETE : Material.GRAY_CONCRETE));
+
+        boolean particles = plugin.getPlayerStorage().areParticlesEnabled(player);
+        inv.setItem(12, createAdminItem(Material.FIREWORK_STAR, "<yellow>Particles", "toggle_particles", particles));
+        inv.setItem(13, new ItemStack(particles ? Material.LIME_CONCRETE : Material.GRAY_CONCRETE));
+
+        inv.setItem(15, createAdminItem(Material.ENDER_EYE, "<aqua>Vanish Settings", "vanish_settings", true));
 
         player.openInventory(inv);
     }
@@ -174,8 +183,111 @@ public final class GuiManager {
 
         inv.setItem(11, createWorldItem(Material.GRASS_BLOCK, "<green>Survival", "world"));
         inv.setItem(13, createWorldItem(Material.BEACON, "<gold>Lobby", "lobby"));
-        
+
         inv.setItem(22, createBackButton("admin"));
+
+        player.openInventory(inv);
+    }
+
+    public void openTeleportMenu(final Player player, int page) {
+        final Inventory inv = Bukkit.createInventory(null, 54, MessageUtil.parse("<green>" + MessageUtil.ICON_TP + " Teleport Menu - Page " + page));
+
+        // Fill with dimensions first (overworld, nether, end)
+        inv.setItem(0, createWorldItem(Material.GRASS_BLOCK, "<green>Overworld", "tp_world_overworld"));
+        inv.setItem(1, createWorldItem(Material.NETHERRACK, "<red>Nether", "tp_world_nether"));
+        inv.setItem(2, createWorldItem(Material.END_STONE, "<purple>End", "tp_world_end"));
+
+        // Online players (player heads)
+        int slot = 9;
+        int itemsOnPage = 0;
+        final int itemsPerPage = 45;
+        final int skipItems = (page - 1) * itemsPerPage;
+        int skipped = 0;
+
+        for (final Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            if (skipped < skipItems) {
+                skipped++;
+                continue;
+            }
+            if (itemsOnPage >= itemsPerPage - 9) break; // Leave last row for navigation
+
+            final ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+            final ItemMeta meta = head.getItemMeta();
+            meta.displayName(MessageUtil.parse("<yellow>" + onlinePlayer.getName()));
+            meta.getPersistentDataContainer().set(ADMIN_KEY, PersistentDataType.STRING, "tp_player:" + onlinePlayer.getName());
+            final List<Component> lore = new ArrayList<>();
+            lore.add(MessageUtil.parse("<gray>Click to teleport to " + onlinePlayer.getName()));
+            meta.lore(lore);
+            head.setItemMeta(meta);
+            inv.setItem(slot++, head);
+            itemsOnPage++;
+        }
+
+        // Offline players (from stored data)
+        final File dataFolder = new File(plugin.getDataFolder(), "playerdata");
+        if (dataFolder.exists()) {
+            final File[] files = dataFolder.listFiles((dir, name) -> name.endsWith(".yml"));
+            if (files != null) {
+                for (final File file : files) {
+                    if (itemsOnPage >= itemsPerPage - 9) break;
+
+                    final String fileName = file.getName();
+                    final String namePart = fileName.substring(0, fileName.lastIndexOf('_'));
+                    final String uuidPart = fileName.substring(fileName.lastIndexOf('_') + 1, fileName.lastIndexOf('.'));
+
+                    // Skip if player is online (already added)
+                    boolean isOnline = false;
+                    for (final Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                        if (onlinePlayer.getName().equalsIgnoreCase(namePart)) {
+                            isOnline = true;
+                            break;
+                        }
+                    }
+                    if (isOnline) continue;
+
+                    if (skipped < skipItems) {
+                        skipped++;
+                        continue;
+                    }
+
+                    final ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+                    final ItemMeta meta = head.getItemMeta();
+                    meta.displayName(MessageUtil.parse("<gray>" + namePart + " <dark_gray>(Offline)"));
+                    meta.getPersistentDataContainer().set(ADMIN_KEY, PersistentDataType.STRING, "tp_offline:" + uuidPart);
+                    final List<Component> lore = new ArrayList<>();
+                    lore.add(MessageUtil.parse("<gray>Click to teleport to last known location"));
+                    meta.lore(lore);
+                    head.setItemMeta(meta);
+                    inv.setItem(slot++, head);
+                    itemsOnPage++;
+                }
+            }
+        }
+
+        // Navigation buttons (last row)
+        if (page > 1) {
+            final ItemStack prev = new ItemStack(Material.ARROW);
+            final ItemMeta prevMeta = prev.getItemMeta();
+            prevMeta.displayName(MessageUtil.parse("<green>Previous Page"));
+            prevMeta.getPersistentDataContainer().set(ADMIN_KEY, PersistentDataType.STRING, "tp_page:" + (page - 1));
+            prev.setItemMeta(prevMeta);
+            inv.setItem(48, prev);
+        }
+
+        final ItemStack back = createBackButton("admin");
+        final ItemMeta backMeta = back.getItemMeta();
+        backMeta.displayName(MessageUtil.parse("<red>Back"));
+        back.setItemMeta(backMeta);
+        inv.setItem(49, back);
+
+        if (slot >= 45 + (page * itemsPerPage)) {
+            final ItemStack next = new ItemStack(Material.ARROW);
+            final ItemMeta nextMeta = next.getItemMeta();
+            nextMeta.displayName(MessageUtil.parse("<green>Next Page"));
+            nextMeta.getPersistentDataContainer().set(ADMIN_KEY, PersistentDataType.STRING, "tp_page:" + (page + 1));
+            next.setItemMeta(nextMeta);
+            inv.setItem(50, next);
+        }
 
         player.openInventory(inv);
     }

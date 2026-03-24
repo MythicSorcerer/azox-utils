@@ -84,18 +84,33 @@ public final class InventoryListener implements Listener {
                 case "vanish_settings":
                     plugin.getGuiManager().openVanishGui(player);
                     break;
+                case "teleport_menu":
+                    plugin.getGuiManager().openTeleportMenu(player, 1);
+                    break;
+            }
+        } else if (plainTitle.contains("Configuration")) {
+            event.setCancelled(true);
+            final ItemStack clickedItem = event.getCurrentItem();
+            if (clickedItem == null || clickedItem.getItemMeta() == null) return;
+
+            final String setting = clickedItem.getItemMeta().getPersistentDataContainer().get(GuiManager.ADMIN_KEY, PersistentDataType.STRING);
+            if (setting == null) return;
+
+            final Player player = (Player) event.getWhoClicked();
+
+            switch (setting) {
                 case "toggle_gui":
                     boolean currentGui = plugin.getPlayerStorage().isGuiEnabled(player);
                     plugin.getPlayerStorage().setGuiEnabled(player, !currentGui);
-                    plugin.getGuiManager().openAdminGui(player);
+                    plugin.getGuiManager().openConfigGui(player);
                     break;
-                case "toggle_mobs":
-                    boolean currentMobs = plugin.getPlayerStorage().isGodMobsIgnore(player);
-                    plugin.getPlayerStorage().setGodMobsIgnore(player, !currentMobs);
-                    plugin.getGuiManager().openAdminGui(player);
+                case "toggle_particles":
+                    boolean currentParticles = plugin.getPlayerStorage().areParticlesEnabled(player);
+                    plugin.getPlayerStorage().setParticlesEnabled(player, !currentParticles);
+                    plugin.getGuiManager().openConfigGui(player);
                     break;
-                case "world_selector":
-                    plugin.getGuiManager().openWorldSelectorGui(player);
+                case "vanish_settings":
+                    plugin.getGuiManager().openVanishGui(player);
                     break;
             }
         } else if (plainTitle.contains("Vanish Settings")) {
@@ -144,6 +159,34 @@ public final class InventoryListener implements Listener {
 
             final Player player = (Player) event.getWhoClicked();
             plugin.getGuiManager().openEnderChestPage(player, page);
+        } else if (plainTitle.contains("Teleport Menu")) {
+            event.setCancelled(true);
+            final ItemStack clickedItem = event.getCurrentItem();
+            if (clickedItem == null || clickedItem.getItemMeta() == null) return;
+
+            final String action = clickedItem.getItemMeta().getPersistentDataContainer().get(GuiManager.ADMIN_KEY, PersistentDataType.STRING);
+            if (action == null) return;
+
+            final Player player = (Player) event.getWhoClicked();
+
+            if (action.startsWith("tp_player:")) {
+                final String targetName = action.substring(10);
+                player.closeInventory();
+                player.performCommand("tp " + targetName);
+            } else if (action.startsWith("tp_offline:")) {
+                final String uuidStr = action.substring(11);
+                player.closeInventory();
+                player.performCommand("tpo " + uuidStr);
+            } else if (action.startsWith("tp_page:")) {
+                final int page = Integer.parseInt(action.substring(8));
+                plugin.getGuiManager().openTeleportMenu(player, page);
+            } else if (action.startsWith("tp_world_")) {
+                final String world = action.substring(9);
+                player.closeInventory();
+                player.performCommand("tp " + world);
+            } else if (action.equals("back_to:admin")) {
+                plugin.getGuiManager().openAdminGui(player);
+            }
         }
     }
 

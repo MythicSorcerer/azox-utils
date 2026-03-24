@@ -26,8 +26,6 @@ public final class SettingsCommand extends BaseCommand {
             return;
         }
 
-        MessageUtil.sendMessage(player, "<gold>Personal Settings:");
-        MessageUtil.sendMessage(player, "<gray>Usage: /settings gui - Toggle GUI menus");
-        MessageUtil.sendMessage(player, "<gray>Usage: /settings particles - Toggle particles");
+        plugin.getGuiManager().openConfigGui(player);
     }
 }

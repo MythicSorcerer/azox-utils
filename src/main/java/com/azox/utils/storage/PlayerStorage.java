@@ -165,6 +165,9 @@ public final class PlayerStorage {
     public boolean isTpIgnore(final OfflinePlayer player) { return getConfig(player).getBoolean("prefs.tp_ignore", false); }
     public void setTpIgnore(final OfflinePlayer player, boolean v) { getConfig(player).set("prefs.tp_ignore", v); save(player); }
 
+    public boolean isNightVisionEnabled(final OfflinePlayer player) { return getConfig(player).getBoolean("prefs.night_vision", false); }
+    public void setNightVisionEnabled(final OfflinePlayer player, boolean v) { getConfig(player).set("prefs.night_vision", v); save(player); }
+
     // Jail
     public void setJailed(final OfflinePlayer player, String name, boolean inescapable) {
         getConfig(player).set("jail.name", name);

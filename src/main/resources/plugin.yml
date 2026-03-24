@@ -43,6 +43,10 @@ commands:
     description: Condense items into blocks.
     permission: azox.utils.condense
     aliases: [compact, toblocks]
+  config:
+    description: Open configuration menu.
+    permission: azox.utils.config
+    aliases: [cfg, configuration]
   copyitem:
     description: Duplicate the held item.
     permission: azox.utils.copyitem
@@ -145,12 +149,28 @@ commands:
     description: Teleport to the lobby/hub.
     permission: azox.utils.lobby
     aliases: [hub]
+  loom:
+    description: Open a loom.
+    permission: azox.utils.loom
   lore:
     description: Change item lore.
     permission: azox.utils.lore
   near:
     description: See players within a certain radius.
     permission: azox.utils.near
+  nightvision:
+    description: Toggle night vision effect.
+    permission: azox.utils.nightvision
+    aliases: [nv, nvt, nightvisiontoggle]
+  nv:
+    description: Toggle night vision effect.
+    permission: azox.utils.nightvision
+  nvt:
+    description: Toggle night vision effect.
+    permission: azox.utils.nightvision
+  nightvisiontoggle:
+    description: Toggle night vision effect.
+    permission: azox.utils.nightvision
   phome:
     description: Teleport to a public home.
     permission: azox.utils.phome
@@ -300,3 +320,115 @@ commands:
   world:
     description: Teleport to a different world.
     permission: azox.utils.world
+permissions:
+  azox.user.*:
+    description: All player-use commands
+    default: false
+    children:
+      azox.utils.tpa: true
+      azox.utils.tpahere: true
+      azox.utils.tpaccept: true
+      azox.utils.tpdecline: true
+      azox.utils.tpignore: true
+      azox.utils.home: true
+      azox.utils.sethome: true
+      azox.utils.delhome: true
+      azox.utils.edithome: true
+      azox.utils.phome: true
+      azox.utils.back: true
+      azox.utils.rtp: true
+      azox.utils.spawn: true
+      azox.utils.lobby: true
+      azox.utils.warp: true
+      azox.utils.gui: true
+      azox.utils.config: true
+      azox.utils.settings: true
+      azox.utils.enderchest: true
+      azox.utils.craft: true
+      azox.utils.anvil: true
+      azox.utils.grindstone: true
+      azox.utils.stonecutter: true
+      azox.utils.cartographytable: true
+      azox.utils.loom: true
+      azox.utils.trash: true
+      azox.utils.fly: true
+      azox.utils.god: true
+      azox.utils.heal: true
+      azox.utils.feed: true
+      azox.utils.gamemode: true
+      azox.utils.speed: true
+      azox.utils.nightvision: true
+      azox.utils.ping: true
+      azox.utils.stats: true
+      azox.utils.uptime: true
+      azox.utils.tps: true
+      azox.utils.rules: true
+      azox.utils.compass: true
+      azox.utils.getpos: true
+      azox.utils.near: true
+      azox.utils.top: true
+      azox.utils.jumpto: true
+      azox.utils.world: true
+      azox.utils.weather: true
+      azox.utils.sun: true
+      azox.utils.storm: true
+      azox.utils.suicide: true
+      azox.utils.clearinventory: true
+      azox.utils.condense: true
+      azox.utils.kit: true
+      azox.utils.seen: true
+      azox.utils.whois: true
+  azox.rank.*:
+    description: Advanced permissions for ranked players
+    default: false
+    children:
+      azox.utils.enderchest.pages.2: true
+      azox.utils.enderchest.pages.3: true
+      azox.utils.enderchest.pages.4: true
+      azox.utils.enderchest.pages.5: true
+      azox.utils.vanish.level.1: true
+      azox.utils.vanish.level.2: true
+      azox.utils.vanish.level.3: true
+      azox.utils.vanish.level.4: true
+      azox.utils.vanish.level.5: true
+      azox.utils.particles.*: true
+      azox.utils.rank.owner: true
+      azox.utils.rank.admin: true
+      azox.utils.rank.mod: true
+      azox.utils.rank.vip: true
+  azox.admin.*:
+    description: All admin-only commands
+    default: op
+    children:
+      azox.utils.admin: true
+      azox.utils.vanish: true
+      azox.utils.vanish.see: true
+      azox.utils.see: true
+      azox.utils.jail: true
+      azox.utils.setjail: true
+      azox.utils.deljail: true
+      azox.utils.freeze: true
+      azox.utils.sudo: true
+      azox.utils.lightning: true
+      azox.utils.burn: true
+      azox.utils.extinguish: true
+      azox.utils.tempban: true
+      azox.utils.break: true
+      azox.utils.broadcast: true
+      azox.utils.copyitem: true
+      azox.utils.enchant: true
+      azox.utils.itemname: true
+      azox.utils.lore: true
+      azox.utils.repair: true
+      azox.utils.setwarp: true
+      azox.utils.setphome: true
+      azox.utils.setspawn: true
+      azox.utils.createkit: true
+      azox.utils.delkit: true
+      azox.utils.remove: true
+      azox.utils.tp: true
+      azox.utils.tpo: true
+      azox.utils.tpohere: true
+      azox.utils.tpoundo: true
+      azox.utils.gamemode: true
+      azox.utils.azoxreload: true

@@ -16,6 +16,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -30,7 +31,11 @@ public final class PlayerListener implements Listener {
             event.joinMessage(null);
         }
         checkLobby(event.getPlayer());
-        
+
+        if (plugin.getPlayerStorage().isNightVisionEnabled(event.getPlayer())) {
+            com.azox.utils.command.impl.util.NightVisionCommand.applyNightVision(event.getPlayer());
+        }
+
         Location pendingLoc = plugin.getTeleportManager().getPendingTeleport(event.getPlayer().getUniqueId());
         if (pendingLoc != null) {
             event.getPlayer().teleport(pendingLoc);
@@ -63,6 +68,13 @@ public final class PlayerListener implements Listener {
             event.quitMessage(null);
         }
         plugin.getPlayerDataManager().unload(event.getPlayer().getUniqueId());
+    }
+
+    @EventHandler
+    public void onRespawn(final PlayerRespawnEvent event) {
+        if (plugin.getPlayerStorage().isNightVisionEnabled(event.getPlayer())) {
+            com.azox.utils.command.impl.util.NightVisionCommand.applyNightVision(event.getPlayer());
+        }
     }
 
     @EventHandler

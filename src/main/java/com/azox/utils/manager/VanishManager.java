@@ -94,13 +94,15 @@ public final class VanishManager {
     }
 
     public void toggleItemPickup(final Player player) {
+        final boolean currentlyDisabled = plugin.getPlayerStorage().isVanishPickupDisabled(player);
+        plugin.getPlayerStorage().setVanishPickupDisabled(player, !currentlyDisabled);
 
-        if (noPickupPlayers.contains(player.getUniqueId())) {
-            noPickupPlayers.remove(player.getUniqueId());
-            MessageUtil.sendMessage(player, "<green>" + MessageUtil.ICON_SUCCESS + " Item pickup enabled.");
-        } else {
+        if (!currentlyDisabled) {
             noPickupPlayers.add(player.getUniqueId());
             MessageUtil.sendMessage(player, "<red>" + MessageUtil.ICON_ERROR + " Item pickup disabled.");
+        } else {
+            noPickupPlayers.remove(player.getUniqueId());
+            MessageUtil.sendMessage(player, "<green>" + MessageUtil.ICON_SUCCESS + " Item pickup enabled.");
         }
     }
 
