@@ -177,6 +177,12 @@ java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -jar pap
 
 Then connect IDE to `localhost:5005` for breakpoints.
 
+### Plugin Format Note
+
+This plugin uses **Bukkit API** (`plugin.yml`) which is fully compatible with Paper servers.
+The newer "Paper plugin" format (`paper-plugin.yml`) requires programmatic command registration
+and offers no benefit for this plugin's use case.
+
 ---
 
 ## 🎨 Design Features
