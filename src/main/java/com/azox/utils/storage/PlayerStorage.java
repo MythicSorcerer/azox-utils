@@ -18,23 +18,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public final class PlayerStorage {
 
     private final AzoxUtils plugin = AzoxUtils.getInstance();
 
     private FileConfiguration getConfig(final OfflinePlayer player) {
-        if (player == null) {
-            return null;
-        }
-        return plugin.getPlayerDataManager().getConfig(player);
+        return player != null ? plugin.getPlayerDataManager().getConfig(player) : null;
     }
 
     private void save(final OfflinePlayer player) {
-        if (player == null) {
-            return;
+        if (player != null) {
+            plugin.getPlayerDataManager().saveConfig(player.getUniqueId(), player.getName());
         }
-        plugin.getPlayerDataManager().saveConfig(player.getUniqueId(), player.getName());
+    }
+
+    private boolean getBoolean(final OfflinePlayer player, final String path, final boolean defaultValue) {
+        final FileConfiguration config = getConfig(player);
+        return config != null ? config.getBoolean(path, defaultValue) : defaultValue;
+    }
+
+    private void setBoolean(final OfflinePlayer player, final String path, final boolean value) {
+        if (player != null) {
+            getConfig(player).set(path, value);
+            save(player);
+        }
     }
 
     public void saveHome(final OfflinePlayer player, final Home home) {
@@ -64,11 +74,10 @@ public final class PlayerStorage {
             return;
         }
         final FileConfiguration config = getConfig(player);
-        if (config == null) {
-            return;
+        if (config != null) {
+            config.set("homes." + name.toLowerCase(), null);
+            save(player);
         }
-        config.set("homes." + name.toLowerCase(), null);
-        save(player);
     }
 
     public Map<String, Home> getHomes(final OfflinePlayer player) {
@@ -87,22 +96,9 @@ public final class PlayerStorage {
 
         for (final String key : section.getKeys(false)) {
             final ConfigurationSection homeSection = section.getConfigurationSection(key);
-            if (homeSection == null) {
-                continue;
+            if (homeSection != null) {
+                homes.put(key, createHomeFromSection(player.getUniqueId(), homeSection));
             }
-            homes.put(key, new Home(
-                    player.getUniqueId(),
-                    homeSection.getString("name"),
-                    homeSection.getString("world"),
-                    homeSection.getDouble("x"),
-                    homeSection.getDouble("y"),
-                    homeSection.getDouble("z"),
-                    (float) homeSection.getDouble("yaw"),
-                    (float) homeSection.getDouble("pitch"),
-                    homeSection.getBoolean("isPublic"),
-                    homeSection.getString("description"),
-                    homeSection.getLong("creationDate")
-            ));
         }
         return homes;
     }
@@ -138,23 +134,27 @@ public final class PlayerStorage {
             for (final String key : homesSection.getKeys(false)) {
                 final ConfigurationSection homeSection = homesSection.getConfigurationSection(key);
                 if (homeSection != null && homeSection.getBoolean("isPublic")) {
-                    publicHomes.add(new Home(
-                            uuid,
-                            key,
-                            homeSection.getString("world"),
-                            homeSection.getDouble("x"),
-                            homeSection.getDouble("y"),
-                            homeSection.getDouble("z"),
-                            (float) homeSection.getDouble("yaw"),
-                            (float) homeSection.getDouble("pitch"),
-                            true,
-                            homeSection.getString("description"),
-                            homeSection.getLong("creationDate")
-                    ));
+                    publicHomes.add(createHomeFromSection(uuid, homeSection));
                 }
             }
         }
         return publicHomes;
+    }
+
+    private Home createHomeFromSection(final UUID ownerUuid, final ConfigurationSection section) {
+        return new Home(
+                ownerUuid,
+                section.getString("name"),
+                section.getString("world"),
+                section.getDouble("x"),
+                section.getDouble("y"),
+                section.getDouble("z"),
+                (float) section.getDouble("yaw"),
+                (float) section.getDouble("pitch"),
+                section.getBoolean("isPublic"),
+                section.getString("description"),
+                section.getLong("creationDate")
+        );
     }
 
     public void setBackLocation(final OfflinePlayer player, final Location location) {
@@ -202,138 +202,75 @@ public final class PlayerStorage {
     }
 
     public boolean isGuiEnabled(final OfflinePlayer player) {
-        if (player == null) {
-            return true;
-        }
-        return getConfig(player).getBoolean("prefs.gui", true);
+        return getBoolean(player, "prefs.gui", true);
     }
 
     public void setGuiEnabled(final OfflinePlayer player, final boolean enabled) {
-        if (player == null) {
-            return;
-        }
-        getConfig(player).set("prefs.gui", enabled);
-        save(player);
+        setBoolean(player, "prefs.gui", enabled);
     }
 
     public boolean areParticlesEnabled(final OfflinePlayer player) {
-        if (player == null) {
-            return true;
-        }
-        return getConfig(player).getBoolean("prefs.particles", true);
+        return getBoolean(player, "prefs.particles", true);
     }
 
     public void setParticlesEnabled(final OfflinePlayer player, final boolean enabled) {
-        if (player == null) {
-            return;
-        }
-        getConfig(player).set("prefs.particles", enabled);
-        save(player);
+        setBoolean(player, "prefs.particles", enabled);
     }
 
     public boolean isVanishFakeMessages(final OfflinePlayer player) {
-        if (player == null) {
-            return true;
-        }
-        return getConfig(player).getBoolean("prefs.vanish.fake_messages", true);
+        return getBoolean(player, "prefs.vanish.fake_messages", true);
     }
 
     public void setVanishFakeMessages(final OfflinePlayer player, final boolean enabled) {
-        if (player == null) {
-            return;
-        }
-        getConfig(player).set("prefs.vanish.fake_messages", enabled);
-        save(player);
+        setBoolean(player, "prefs.vanish.fake_messages", enabled);
     }
 
     public boolean isVanishAutoFly(final OfflinePlayer player) {
-        if (player == null) {
-            return true;
-        }
-        return getConfig(player).getBoolean("prefs.vanish.auto_fly", true);
+        return getBoolean(player, "prefs.vanish.auto_fly", true);
     }
 
     public void setVanishAutoFly(final OfflinePlayer player, final boolean enabled) {
-        if (player == null) {
-            return;
-        }
-        getConfig(player).set("prefs.vanish.auto_fly", enabled);
-        save(player);
+        setBoolean(player, "prefs.vanish.auto_fly", enabled);
     }
 
     public boolean isVanishAutoGod(final OfflinePlayer player) {
-        if (player == null) {
-            return true;
-        }
-        return getConfig(player).getBoolean("prefs.vanish.auto_god", true);
+        return getBoolean(player, "prefs.vanish.auto_god", true);
     }
 
     public void setVanishAutoGod(final OfflinePlayer player, final boolean enabled) {
-        if (player == null) {
-            return;
-        }
-        getConfig(player).set("prefs.vanish.auto_god", enabled);
-        save(player);
+        setBoolean(player, "prefs.vanish.auto_god", enabled);
     }
 
     public boolean isVanishPickupDisabled(final OfflinePlayer player) {
-        if (player == null) {
-            return true;
-        }
-        return getConfig(player).getBoolean("prefs.vanish.pickup_disabled", true);
+        return getBoolean(player, "prefs.vanish.pickup_disabled", true);
     }
 
     public void setVanishPickupDisabled(final OfflinePlayer player, final boolean disabled) {
-        if (player == null) {
-            return;
-        }
-        getConfig(player).set("prefs.vanish.pickup_disabled", disabled);
-        save(player);
+        setBoolean(player, "prefs.vanish.pickup_disabled", disabled);
     }
 
     public boolean isGodMobsIgnore(final OfflinePlayer player) {
-        if (player == null) {
-            return true;
-        }
-        return getConfig(player).getBoolean("prefs.god.mobs_ignore", true);
+        return getBoolean(player, "prefs.god.mobs_ignore", true);
     }
 
     public void setGodMobsIgnore(final OfflinePlayer player, final boolean enabled) {
-        if (player == null) {
-            return;
-        }
-        getConfig(player).set("prefs.god.mobs_ignore", enabled);
-        save(player);
+        setBoolean(player, "prefs.god.mobs_ignore", enabled);
     }
 
     public boolean isTpIgnore(final OfflinePlayer player) {
-        if (player == null) {
-            return false;
-        }
-        return getConfig(player).getBoolean("prefs.tp_ignore", false);
+        return getBoolean(player, "prefs.tp_ignore", false);
     }
 
     public void setTpIgnore(final OfflinePlayer player, final boolean enabled) {
-        if (player == null) {
-            return;
-        }
-        getConfig(player).set("prefs.tp_ignore", enabled);
-        save(player);
+        setBoolean(player, "prefs.tp_ignore", enabled);
     }
 
     public boolean isNightVisionEnabled(final OfflinePlayer player) {
-        if (player == null) {
-            return false;
-        }
-        return getConfig(player).getBoolean("prefs.night_vision", false);
+        return getBoolean(player, "prefs.night_vision", false);
     }
 
     public void setNightVisionEnabled(final OfflinePlayer player, final boolean enabled) {
-        if (player == null) {
-            return;
-        }
-        getConfig(player).set("prefs.night_vision", enabled);
-        save(player);
+        setBoolean(player, "prefs.night_vision", enabled);
     }
 
     public void setJailed(final OfflinePlayer player, final String name, final boolean inescapable) {
@@ -363,46 +300,34 @@ public final class PlayerStorage {
             return;
         }
         final FileConfiguration config = getConfig(player);
-        if (config == null) {
-            return;
+        if (config != null) {
+            config.set("jail", null);
+            save(player);
         }
-        config.set("jail", null);
-        save(player);
     }
 
     public String getJailName(final OfflinePlayer player) {
-        if (player == null) {
-            return null;
-        }
         final FileConfiguration config = getConfig(player);
         return config != null ? config.getString("jail.name") : null;
     }
 
     public boolean isJailInescapable(final OfflinePlayer player) {
-        if (player == null) {
-            return false;
-        }
         final FileConfiguration config = getConfig(player);
         return config != null && config.getBoolean("jail.inescapable", false);
     }
 
     public Long getJailReleaseTime(final OfflinePlayer player) {
-        if (player == null) {
-            return null;
-        }
         final FileConfiguration config = getConfig(player);
         if (config == null) {
             return null;
         }
-        return config.getLong("jail.releaseTime", -1L) > 0 ? config.getLong("jail.releaseTime") : null;
+        final long releaseTime = config.getLong("jail.releaseTime", -1L);
+        return releaseTime > 0 ? releaseTime : null;
     }
 
     public boolean shouldReleaseFromJail(final OfflinePlayer player) {
         final Long releaseTime = getJailReleaseTime(player);
-        if (releaseTime == null) {
-            return false;
-        }
-        return System.currentTimeMillis() >= releaseTime;
+        return releaseTime != null && System.currentTimeMillis() >= releaseTime;
     }
 
     public void saveEnderChestPage(final OfflinePlayer player, final int page, final ItemStack[] items) {
@@ -410,11 +335,10 @@ public final class PlayerStorage {
             return;
         }
         final FileConfiguration config = getConfig(player);
-        if (config == null) {
-            return;
+        if (config != null) {
+            config.set("enderchest.page_" + page, items);
+            save(player);
         }
-        config.set("enderchest.page_" + page, items);
-        save(player);
     }
 
     public ItemStack[] getEnderChestPage(final OfflinePlayer player, final int page) {

@@ -13,7 +13,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -34,220 +33,31 @@ public final class InventoryListener implements Listener {
             return;
         }
 
+        if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
+
+        final ItemStack clickedItem = event.getCurrentItem();
+        if (clickedItem == null || clickedItem.getItemMeta() == null) {
+            return;
+        }
+
         if (plainTitle.contains("Your Homes")) {
-            event.setCancelled(true);
-            final ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getItemMeta() == null) return;
-
-            final String homeName = clickedItem.getItemMeta().getPersistentDataContainer().get(GuiManager.HOME_KEY, PersistentDataType.STRING);
-            if (homeName == null) return;
-
-            final Player player = (Player) event.getWhoClicked();
-
-            if (event.isLeftClick()) {
-                player.closeInventory();
-                player.performCommand("home " + homeName);
-            } else if (event.isRightClick()) {
-                player.closeInventory();
-                player.performCommand("edithome " + homeName);
-            }
+            handleHomesClick(event, player, clickedItem);
         } else if (plainTitle.contains("Server Utilities")) {
-            event.setCancelled(true);
-            final ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getItemMeta() == null) return;
-
-            final String type = clickedItem.getItemMeta().getPersistentDataContainer().get(GuiManager.UTILITY_KEY, PersistentDataType.STRING);
-            if (type == null) return;
-
-            final Player player = (Player) event.getWhoClicked();
-
-            player.closeInventory();
-            switch (type) {
-                case "craft": player.performCommand("craft"); break;
-                case "grindstone": player.performCommand("grindstone"); break;
-                case "stonecutter": player.performCommand("stonecutter"); break;
-                case "ec": player.performCommand("ec"); break;
-                case "anvil": player.performCommand("anvil"); break;
-                case "carttable": player.performCommand("carttable"); break;
-            }
+            handleUtilitiesClick(event, player, clickedItem);
         } else if (plainTitle.contains("Admin Configuration")) {
-            event.setCancelled(true);
-            final ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getItemMeta() == null) return;
-
-            final String setting = clickedItem.getItemMeta().getPersistentDataContainer().get(GuiManager.ADMIN_KEY, PersistentDataType.STRING);
-            if (setting == null) return;
-
-            final Player player = (Player) event.getWhoClicked();
-
-            switch (setting) {
-                case "vanish_settings":
-                    plugin.getGuiManager().openVanishGui(player);
-                    break;
-                case "teleport_menu":
-                    plugin.getGuiManager().openTeleportMenu(player, 1);
-                    break;
-            }
+            handleAdminClick(event, player, clickedItem);
+        } else if (plainTitle.contains("Vanish Settings")) {
+            handleVanishSettingsClick(event, player, clickedItem);
         } else if (plainTitle.contains("Configuration")) {
-            event.setCancelled(true);
-            final ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getItemMeta() == null) {
-                return;
-            }
-
-            final String setting = clickedItem.getItemMeta().getPersistentDataContainer().get(GuiManager.ADMIN_KEY, PersistentDataType.STRING);
-            if (setting == null) {
-                return;
-            }
-
-            final Player player = (Player) event.getWhoClicked();
-
-            switch (setting) {
-                case "toggle_gui":
-                    final boolean currentGui = plugin.getPlayerStorage().isGuiEnabled(player);
-                    plugin.getPlayerStorage().setGuiEnabled(player, !currentGui);
-                    plugin.getGuiManager().openConfigGui(player);
-                    break;
-                case "toggle_particles":
-                    final boolean currentParticles = plugin.getPlayerStorage().areParticlesEnabled(player);
-                    plugin.getPlayerStorage().setParticlesEnabled(player, !currentParticles);
-                    plugin.getGuiManager().openConfigGui(player);
-                    break;
-            }
-        } else if (plainTitle.contains("Vanish Settings")) {
-            event.setCancelled(true);
-            final ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getItemMeta() == null) return;
-
-            final String setting = clickedItem.getItemMeta().getPersistentDataContainer().get(GuiManager.ADMIN_KEY, PersistentDataType.STRING);
-            if (setting == null) return;
-
-            final Player player = (Player) event.getWhoClicked();
-
-            switch (setting) {
-                case "v_fake_msg":
-                    plugin.getPlayerStorage().setVanishFakeMessages(player, !plugin.getPlayerStorage().isVanishFakeMessages(player));
-                    break;
-                case "v_auto_fly":
-                    plugin.getPlayerStorage().setVanishAutoFly(player, !plugin.getPlayerStorage().isVanishAutoFly(player));
-                    break;
-                case "v_auto_god":
-                    plugin.getPlayerStorage().setVanishAutoGod(player, !plugin.getPlayerStorage().isVanishAutoGod(player));
-                    break;
-                case "v_pickup":
-                    plugin.getPlayerStorage().setVanishPickupDisabled(player, !plugin.getPlayerStorage().isVanishPickupDisabled(player));
-                    break;
-            }
-            plugin.getGuiManager().openVanishGui(player);
+            handleConfigClick(event, player, clickedItem);
         } else if (plainTitle.contains("World Selector")) {
-            event.setCancelled(true);
-            final ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getItemMeta() == null) return;
-
-            final String worldName = clickedItem.getItemMeta().getPersistentDataContainer().get(GuiManager.WORLD_KEY, PersistentDataType.STRING);
-            if (worldName == null) return;
-
-            final Player player = (Player) event.getWhoClicked();
-            player.closeInventory();
-            player.performCommand("tp " + worldName);
-        } else if (plainTitle.equals("Ender Chest Pages")) {
-            event.setCancelled(true);
-            final ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getItemMeta() == null) return;
-
-            final Integer page = clickedItem.getItemMeta().getPersistentDataContainer().get(GuiManager.EC_PAGE_KEY, PersistentDataType.INTEGER);
-            if (page == null) return;
-
-            final Player player = (Player) event.getWhoClicked();
-            plugin.getGuiManager().openEnderChestPage(player, page);
+            handleWorldSelectorClick(event, player, clickedItem);
         } else if (plainTitle.contains("Teleport Menu")) {
-            event.setCancelled(true);
-            final ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getItemMeta() == null) {
-                return;
-            }
-
-            final Player player = (Player) event.getWhoClicked();
-
-            // Check for world teleport (uses WORLD_KEY)
-            final String worldName = clickedItem.getItemMeta().getPersistentDataContainer().get(GuiManager.WORLD_KEY, PersistentDataType.STRING);
-            if (worldName != null) {
-                player.closeInventory();
-                player.performCommand("tp " + worldName);
-                return;
-            }
-
-            // Check for other actions (uses ADMIN_KEY)
-            final String action = clickedItem.getItemMeta().getPersistentDataContainer().get(GuiManager.ADMIN_KEY, PersistentDataType.STRING);
-            if (action == null) {
-                return;
-            }
-
-            if (action.startsWith("tp_player:")) {
-                final String targetName = action.substring(10);
-                player.closeInventory();
-                player.performCommand("tp " + targetName);
-            } else if (action.startsWith("tp_offline:")) {
-                final String uuidStr = action.substring(11);
-                player.closeInventory();
-                player.performCommand("tpo " + uuidStr);
-            } else if (action.startsWith("tp_page:")) {
-                final int page = Integer.parseInt(action.substring(8));
-                plugin.getGuiManager().openTeleportMenu(player, page);
-            } else if (action.equals("back_to:admin")) {
-                plugin.getGuiManager().openAdminGui(player);
-            } else if (action.equals("back_to:config")) {
-                plugin.getGuiManager().openConfigGui(player);
-            }
-        } else if (plainTitle.contains("World Selector")) {
-            event.setCancelled(true);
-            final ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getItemMeta() == null) {
-                return;
-            }
-
-            final String worldName = clickedItem.getItemMeta().getPersistentDataContainer().get(GuiManager.WORLD_KEY, PersistentDataType.STRING);
-            if (worldName == null) {
-                return;
-            }
-
-            final Player player = (Player) event.getWhoClicked();
-            player.closeInventory();
-            player.performCommand("tp " + worldName);
-        } else if (plainTitle.contains("Vanish Settings")) {
-            event.setCancelled(true);
-            final ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getItemMeta() == null) {
-                return;
-            }
-
-            final String setting = clickedItem.getItemMeta().getPersistentDataContainer().get(GuiManager.ADMIN_KEY, PersistentDataType.STRING);
-            if (setting == null) {
-                return;
-            }
-
-            final Player player = (Player) event.getWhoClicked();
-
-            if (setting.equals("back_to:admin")) {
-                plugin.getGuiManager().openAdminGui(player);
-                return;
-            }
-
-            switch (setting) {
-                case "v_fake_msg":
-                    plugin.getPlayerStorage().setVanishFakeMessages(player, !plugin.getPlayerStorage().isVanishFakeMessages(player));
-                    break;
-                case "v_auto_fly":
-                    plugin.getPlayerStorage().setVanishAutoFly(player, !plugin.getPlayerStorage().isVanishAutoFly(player));
-                    break;
-                case "v_auto_god":
-                    plugin.getPlayerStorage().setVanishAutoGod(player, !plugin.getPlayerStorage().isVanishAutoGod(player));
-                    break;
-                case "v_pickup":
-                    plugin.getPlayerStorage().setVanishPickupDisabled(player, !plugin.getPlayerStorage().isVanishPickupDisabled(player));
-                    break;
-            }
-            plugin.getGuiManager().openVanishGui(player);
+            handleTeleportMenuClick(event, player, clickedItem);
+        } else if (plainTitle.equals("Ender Chest Pages")) {
+            handleEnderChestPageClick(event, player, clickedItem);
         }
     }
 
@@ -260,17 +70,168 @@ public final class InventoryListener implements Listener {
                 final Player player = (Player) event.getPlayer();
                 plugin.getPlayerStorage().saveEnderChestPage(player, page, event.getInventory().getContents());
                 MessageUtil.sendMessage(player, "<green>" + MessageUtil.ICON_SUCCESS + " Ender Chest Page " + page + " saved!");
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
     }
 
+    @EventHandler
+    public void onInventoryDrag(final InventoryDragEvent event) {
+        final String plainTitle = PLAIN_SERIALIZER.serialize(event.getView().title());
+        if (plainTitle.startsWith("Inspecting: ")) {
+            event.setCancelled(true);
+        }
+    }
+
+    private void handleHomesClick(final InventoryClickEvent event, final Player player, final ItemStack item) {
+        event.setCancelled(true);
+        final String homeName = item.getItemMeta().getPersistentDataContainer().get(GuiManager.HOME_KEY, PersistentDataType.STRING);
+        if (homeName == null) {
+            return;
+        }
+
+        player.closeInventory();
+        if (event.isLeftClick()) {
+            player.performCommand("home " + homeName);
+        } else if (event.isRightClick()) {
+            player.performCommand("edithome " + homeName);
+        }
+    }
+
+    private void handleUtilitiesClick(final InventoryClickEvent event, final Player player, final ItemStack item) {
+        event.setCancelled(true);
+        final String type = item.getItemMeta().getPersistentDataContainer().get(GuiManager.UTILITY_KEY, PersistentDataType.STRING);
+        if (type == null) {
+            return;
+        }
+
+        player.closeInventory();
+        switch (type) {
+            case "craft" -> player.performCommand("craft");
+            case "grindstone" -> player.performCommand("grindstone");
+            case "stonecutter" -> player.performCommand("stonecutter");
+            case "ec" -> player.performCommand("ec");
+            case "anvil" -> player.performCommand("anvil");
+            case "carttable" -> player.performCommand("carttable");
+        }
+    }
+
+    private void handleAdminClick(final InventoryClickEvent event, final Player player, final ItemStack item) {
+        event.setCancelled(true);
+        final String setting = item.getItemMeta().getPersistentDataContainer().get(GuiManager.ADMIN_KEY, PersistentDataType.STRING);
+        if (setting == null) {
+            return;
+        }
+
+        switch (setting) {
+            case "vanish_settings" -> plugin.getGuiManager().openVanishGui(player);
+            case "teleport_menu" -> plugin.getGuiManager().openTeleportMenu(player, 1);
+        }
+    }
+
+    private void handleVanishSettingsClick(final InventoryClickEvent event, final Player player, final ItemStack item) {
+        event.setCancelled(true);
+        final String setting = item.getItemMeta().getPersistentDataContainer().get(GuiManager.ADMIN_KEY, PersistentDataType.STRING);
+        if (setting == null) {
+            return;
+        }
+
+        if (setting.equals("back_to:admin")) {
+            plugin.getGuiManager().openAdminGui(player);
+            return;
+        }
+
+        switch (setting) {
+            case "v_fake_msg" -> plugin.getPlayerStorage().setVanishFakeMessages(player, !plugin.getPlayerStorage().isVanishFakeMessages(player));
+            case "v_auto_fly" -> plugin.getPlayerStorage().setVanishAutoFly(player, !plugin.getPlayerStorage().isVanishAutoFly(player));
+            case "v_auto_god" -> plugin.getPlayerStorage().setVanishAutoGod(player, !plugin.getPlayerStorage().isVanishAutoGod(player));
+            case "v_pickup" -> plugin.getPlayerStorage().setVanishPickupDisabled(player, !plugin.getPlayerStorage().isVanishPickupDisabled(player));
+        }
+        plugin.getGuiManager().openVanishGui(player);
+    }
+
+    private void handleConfigClick(final InventoryClickEvent event, final Player player, final ItemStack item) {
+        event.setCancelled(true);
+        final String setting = item.getItemMeta().getPersistentDataContainer().get(GuiManager.ADMIN_KEY, PersistentDataType.STRING);
+        if (setting == null) {
+            return;
+        }
+
+        switch (setting) {
+            case "toggle_gui" -> {
+                plugin.getPlayerStorage().setGuiEnabled(player, !plugin.getPlayerStorage().isGuiEnabled(player));
+                plugin.getGuiManager().openConfigGui(player);
+            }
+            case "toggle_particles" -> {
+                plugin.getPlayerStorage().setParticlesEnabled(player, !plugin.getPlayerStorage().areParticlesEnabled(player));
+                plugin.getGuiManager().openConfigGui(player);
+            }
+        }
+    }
+
+    private void handleWorldSelectorClick(final InventoryClickEvent event, final Player player, final ItemStack item) {
+        event.setCancelled(true);
+        final String worldName = item.getItemMeta().getPersistentDataContainer().get(GuiManager.WORLD_KEY, PersistentDataType.STRING);
+        if (worldName == null) {
+            return;
+        }
+
+        player.closeInventory();
+        player.performCommand("tp " + worldName);
+    }
+
+    private void handleTeleportMenuClick(final InventoryClickEvent event, final Player player, final ItemStack item) {
+        event.setCancelled(true);
+        final var meta = item.getItemMeta();
+
+        final String worldName = meta.getPersistentDataContainer().get(GuiManager.WORLD_KEY, PersistentDataType.STRING);
+        if (worldName != null) {
+            player.closeInventory();
+            player.performCommand("tp " + worldName);
+            return;
+        }
+
+        final String action = meta.getPersistentDataContainer().get(GuiManager.ADMIN_KEY, PersistentDataType.STRING);
+        if (action == null) {
+            return;
+        }
+
+        if (action.startsWith("tp_player:")) {
+            player.closeInventory();
+            player.performCommand("tp " + action.substring(10));
+        } else if (action.startsWith("tp_offline:")) {
+            player.closeInventory();
+            player.performCommand("tpo " + action.substring(11));
+        } else if (action.startsWith("tp_page:")) {
+            plugin.getGuiManager().openTeleportMenu(player, Integer.parseInt(action.substring(8)));
+        } else if (action.equals("back_to:admin")) {
+            plugin.getGuiManager().openAdminGui(player);
+        } else if (action.equals("back_to:config")) {
+            plugin.getGuiManager().openConfigGui(player);
+        }
+    }
+
+    private void handleEnderChestPageClick(final InventoryClickEvent event, final Player player, final ItemStack item) {
+        event.setCancelled(true);
+        final Integer page = item.getItemMeta().getPersistentDataContainer().get(GuiManager.EC_PAGE_KEY, PersistentDataType.INTEGER);
+        if (page == null) {
+            return;
+        }
+
+        plugin.getGuiManager().openEnderChestPage(player, page);
+    }
+
     private void handleInspectClick(final InventoryClickEvent event) {
-        final Inventory inv = event.getInventory();
+        final var inv = event.getInventory();
         final ItemStack infoItem = inv.getItem(42);
-        if (infoItem == null || infoItem.getItemMeta() == null) return;
+        if (infoItem == null || infoItem.getItemMeta() == null) {
+            return;
+        }
 
         final String uuidStr = infoItem.getItemMeta().getPersistentDataContainer().get(SeeCommand.INSPECT_TARGET_KEY, PersistentDataType.STRING);
-        if (uuidStr == null) return;
+        if (uuidStr == null) {
+            return;
+        }
 
         final Player target = Bukkit.getPlayer(UUID.fromString(uuidStr));
         if (target == null) {
@@ -279,7 +240,6 @@ public final class InventoryListener implements Listener {
         }
 
         final int slot = event.getRawSlot();
-        
         final ItemStack clickedItem = event.getCurrentItem();
         if (slot >= 42 && slot <= 44 || (slot >= 45 && target.getOpenInventory().getTopInventory() == null) || (clickedItem != null && clickedItem.getType() == Material.GRAY_STAINED_GLASS_PANE)) {
             event.setCancelled(true);
@@ -288,7 +248,9 @@ public final class InventoryListener implements Listener {
 
         Bukkit.getScheduler().runTask(plugin, () -> {
             final ItemStack[] contents = target.getInventory().getContents();
-            for (int i = 0; i < 36; i++) contents[i] = filterPlaceholder(inv.getItem(i));
+            for (int i = 0; i < 36; i++) {
+                contents[i] = filterPlaceholder(inv.getItem(i));
+            }
             target.getInventory().setContents(contents);
 
             final ItemStack[] armor = new ItemStack[4];
@@ -301,27 +263,19 @@ public final class InventoryListener implements Listener {
             target.getInventory().setItemInOffHand(filterPlaceholder(inv.getItem(40)));
             target.setItemOnCursor(filterPlaceholder(inv.getItem(50)));
 
-            final Inventory topInv = target.getOpenInventory().getTopInventory();
+            final var topInv = target.getOpenInventory().getTopInventory();
             if (topInv != null && topInv.getType() != org.bukkit.event.inventory.InventoryType.CRAFTING && topInv.getType() != org.bukkit.event.inventory.InventoryType.PLAYER) {
-                for (int i = 0; i < 9; i++) {
-                    if (i < topInv.getSize()) {
-                        topInv.setItem(i, filterPlaceholder(inv.getItem(45 + i)));
-                    }
+                for (int i = 0; i < 9 && i < topInv.getSize(); i++) {
+                    topInv.setItem(i, filterPlaceholder(inv.getItem(45 + i)));
                 }
             }
         });
     }
 
-    @EventHandler
-    public void onInventoryDrag(final InventoryDragEvent event) {
-        final String plainTitle = PLAIN_SERIALIZER.serialize(event.getView().title());
-        if (plainTitle.startsWith("Inspecting: ")) {
-            event.setCancelled(true);
+    private ItemStack filterPlaceholder(final ItemStack item) {
+        if (item == null || item.getType() == Material.GRAY_STAINED_GLASS_PANE) {
+            return null;
         }
-    }
-
-    private ItemStack filterPlaceholder(ItemStack item) {
-        if (item == null || item.getType() == Material.GRAY_STAINED_GLASS_PANE) return null;
         return item;
     }
 }

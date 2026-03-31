@@ -2,6 +2,7 @@ package com.azox.utils.command;
 
 import com.azox.utils.AzoxUtils;
 import com.azox.utils.util.MessageUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class BaseCommand implements CommandExecutor, TabCompleter {
 
@@ -25,7 +27,9 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
     public abstract void execute(CommandSender sender, String label, String[] args);
 
     protected boolean isPlayer(CommandSender sender) {
-        if (sender instanceof Player) return true;
+        if (sender instanceof Player) {
+            return true;
+        }
         MessageUtil.sendMessage(sender, "<red>Only players can use this command!");
         return false;
     }
@@ -40,10 +44,22 @@ public abstract class BaseCommand implements CommandExecutor, TabCompleter {
     }
 
     protected List<String> getVisiblePlayerNames(CommandSender sender, String partial) {
-        return org.bukkit.Bukkit.getOnlinePlayers().stream()
-                .filter(p -> !(sender instanceof Player) || plugin.getVanishManager().canSee((Player)sender, p))
-                .map(org.bukkit.entity.Player::getName)
+        return Bukkit.getOnlinePlayers().stream()
+                .filter(p -> !(sender instanceof Player) || plugin.getVanishManager().canSee((Player) sender, p))
+                .map(Player::getName)
                 .filter(name -> name.toLowerCase().startsWith(partial.toLowerCase()))
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
+    }
+
+    protected boolean hasPermission(CommandSender sender, String permission) {
+        return sender.hasPermission(permission);
+    }
+
+    protected boolean permissionDenied(CommandSender sender, String permission) {
+        if (!hasPermission(sender, permission)) {
+            MessageUtil.sendMessage(sender, "<red>You don't have permission to use this command!");
+            return true;
+        }
+        return false;
     }
 }

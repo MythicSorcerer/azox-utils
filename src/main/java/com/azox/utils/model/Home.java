@@ -28,12 +28,20 @@ public final class Home {
     private long creationDate;
 
     public Location getLocation() {
+        if (this.worldName == null) {
+            return null;
+        }
         final World world = Bukkit.getWorld(this.worldName);
-        if (world == null) return null;
+        if (world == null) {
+            return null;
+        }
         return new Location(world, this.x, this.y, this.z, this.yaw, this.pitch);
     }
 
     public void setLocation(final Location location) {
+        if (location == null || location.getWorld() == null) {
+            return;
+        }
         this.worldName = location.getWorld().getName();
         this.x = Math.round(location.getX() * 100.0) / 100.0;
         this.y = Math.round(location.getY() * 100.0) / 100.0;

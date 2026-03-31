@@ -4,19 +4,21 @@ import com.azox.utils.AzoxUtils;
 import com.azox.utils.model.TeleportRequest;
 import com.azox.utils.storage.PlayerStorage;
 import com.azox.utils.util.MessageUtil;
-import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class TeleportManager {
+
+    private static final int TELEPORT_DELAY_SECONDS = 3;
+    private static final long TELEPORT_EXPIRY_MILLIS = 60_000;
+    private static final double MOVE_THRESHOLD_SQUARED = 0.1;
 
     private final AzoxUtils plugin = AzoxUtils.getInstance();
     private final Map<UUID, TeleportRequest> pendingRequests = new ConcurrentHashMap<>();
@@ -24,43 +26,30 @@ public final class TeleportManager {
     private final Map<UUID, Location> pendingOfflineTeleports = new ConcurrentHashMap<>();
     private final Map<UUID, Location> undoLocations = new ConcurrentHashMap<>();
 
-    public TeleportManager() {
-    }
-
     public void addPendingTeleport(final UUID target, final Location destination) {
-        if (target == null || destination == null) {
-            return;
+        if (target != null && destination != null) {
+            pendingOfflineTeleports.put(target, destination);
         }
-        pendingOfflineTeleports.put(target, destination);
     }
 
     public Location getPendingTeleport(final UUID target) {
-        if (target == null) {
-            return null;
-        }
-        return pendingOfflineTeleports.remove(target);
+        return target != null ? pendingOfflineTeleports.remove(target) : null;
     }
 
     public void addUndoLocation(final UUID target, final Location oldLocation) {
-        if (target == null || oldLocation == null) {
-            return;
+        if (target != null && oldLocation != null) {
+            undoLocations.put(target, oldLocation);
         }
-        undoLocations.put(target, oldLocation);
     }
 
     public Location getUndoLocation(final UUID target) {
-        if (target == null) {
-            return null;
-        }
-        return undoLocations.remove(target);
+        return target != null ? undoLocations.remove(target) : null;
     }
 
     public void requestTeleport(final Player requester, final Player target, final boolean here) {
-        if (requester == null || target == null) {
-            return;
+        if (requester != null && target != null) {
+            pendingRequests.put(target.getUniqueId(), new TeleportRequest(requester, target, here, System.currentTimeMillis()));
         }
-        final TeleportRequest request = new TeleportRequest(requester, target, here, System.currentTimeMillis());
-        pendingRequests.put(target.getUniqueId(), request);
     }
 
     public Optional<TeleportRequest> getRequest(final Player target) {
@@ -76,30 +65,41 @@ public final class TeleportManager {
     }
 
     public void removeRequest(final Player target) {
-        if (target == null) {
-            return;
+        if (target != null) {
+            pendingRequests.remove(target.getUniqueId());
         }
-        pendingRequests.remove(target.getUniqueId());
     }
 
     public void teleportWithDelay(final Player player, final Location targetLocation) {
         if (player == null || targetLocation == null) {
             return;
         }
-        final int delay = 3;
 
-        if (delay <= 0 || player.hasPermission("azox.utils.teleport.instant")) {
-            setLastLocation(player, player.getLocation());
-            player.teleport(targetLocation);
-            MessageUtil.sendMessage(player, "<green>" + MessageUtil.ICON_SUCCESS + " Teleported!");
+        if (player.hasPermission("azox.utils.teleport.instant")) {
+            teleportInstantly(player, targetLocation);
             return;
         }
 
-        MessageUtil.sendMessage(player, "<yellow>" + MessageUtil.ICON_TP + " Teleporting in " + delay + " seconds, please do not move...");
+        if (TELEPORT_DELAY_SECONDS <= 0) {
+            teleportInstantly(player, targetLocation);
+            return;
+        }
+
+        scheduleDelayedTeleport(player, targetLocation);
+    }
+
+    private void teleportInstantly(final Player player, final Location targetLocation) {
+        setLastLocation(player, player.getLocation());
+        player.teleport(targetLocation);
+        MessageUtil.sendMessage(player, "<green>" + MessageUtil.ICON_SUCCESS + " Teleported!");
+    }
+
+    private void scheduleDelayedTeleport(final Player player, final Location targetLocation) {
+        MessageUtil.sendMessage(player, "<yellow>" + MessageUtil.ICON_TP + " Teleporting in " + TELEPORT_DELAY_SECONDS + " seconds, please do not move...");
         final Location startLocation = player.getLocation();
 
         new BukkitRunnable() {
-            private int count = delay;
+            private int count = TELEPORT_DELAY_SECONDS;
 
             @Override
             public void run() {
@@ -108,7 +108,7 @@ public final class TeleportManager {
                     return;
                 }
 
-                if (player.getLocation().distanceSquared(startLocation) > 0.1) {
+                if (player.getLocation().distanceSquared(startLocation) > MOVE_THRESHOLD_SQUARED) {
                     MessageUtil.sendMessage(player, "<red>" + MessageUtil.ICON_ERROR + " Teleport cancelled because you moved!");
                     cancel();
                     return;
@@ -124,22 +124,24 @@ public final class TeleportManager {
 
                 count--;
             }
-        }.runTaskTimer(AzoxUtils.getInstance(), 0L, 20L);
+        }.runTaskTimer(plugin, 0L, 20L);
     }
 
     public void setLastLocation(final Player player, final Location location) {
-        if (player == null || location == null) {
-            return;
+        if (player != null && location != null) {
+            lastLocations.put(player.getUniqueId(), location);
+            plugin.getPlayerStorage().setBackLocation(player, location);
         }
-        lastLocations.put(player.getUniqueId(), location);
-        plugin.getPlayerStorage().setBackLocation(player, location);
     }
 
     public Optional<Location> getLastLocation(final Player player) {
         if (player == null) {
             return Optional.empty();
         }
-        return Optional.ofNullable(lastLocations.get(player.getUniqueId()))
-                .or(() -> Optional.ofNullable(plugin.getPlayerStorage().getBackLocation(player)));
+        final Location cached = lastLocations.get(player.getUniqueId());
+        if (cached != null) {
+            return Optional.of(cached);
+        }
+        return Optional.ofNullable(plugin.getPlayerStorage().getBackLocation(player));
     }
 }
